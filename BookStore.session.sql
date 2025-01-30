@@ -1,0 +1,186 @@
+-- CREATE TYPE userRole AS ENUM ('Admin', 'Author', 'Customer');
+-- CREATE TABLE users (
+--     id SERIAL PRIMARY KEY,
+--     username VARCHAR(50) UNIQUE NOT NULL,
+--     first_name VARCHAR(50) NOT NULL,
+--     last_name VARCHAR(50) NOT NULL,
+--     email VARCHAR(255) UNIQUE NOT NULL,
+--     phone VARCHAR(20),
+--     password VARCHAR(255) NOT NULL,
+--     role userRole NOT NULL,
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+-- );
+-- CREATE TABLE cities (
+--     id SERIAL PRIMARY KEY,
+--     name VARCHAR(100) NOT NULL,
+--     UNIQUE(name),
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+-- );
+-- CREATE TABLE authors (
+--     id SERIAL PRIMARY KEY,
+--     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+--     city_id INTEGER REFERENCES cities(id),
+--     goodreads_link VARCHAR(255),
+--     bank_account_number VARCHAR(50),
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+--     UNIQUE(user_id)
+-- );
+-- CREATE TYPE subscription_model AS ENUM ('Free', 'Plus', 'Premium');
+-- CREATE TABLE customers (
+--     id SERIAL PRIMARY KEY,
+--     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+--     subscription_model subscription_model DEFAULT 'Free',
+--     subscription_end_time TIMESTAMP WITH TIME ZONE,
+--     wallet_amount DECIMAL(10,2) DEFAULT 0.00,
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+--     UNIQUE(user_id)
+-- );
+-- CREATE TABLE genres (
+--     id SERIAL PRIMARY KEY,
+--     name VARCHAR(50) NOT NULL,
+--     UNIQUE(name)
+-- );
+-- CREATE TABLE books (
+--     id SERIAL PRIMARY KEY,
+--     title VARCHAR(255) NOT NULL,
+--     isbn VARCHAR(13) UNIQUE NOT NULL,
+--     price DECIMAL(10,2) NOT NULL,
+--     genre_id INTEGER REFERENCES genres(id),
+--     description TEXT,
+--     total_units INTEGER NOT NULL DEFAULT 1 CHECK (total_units > 0),
+--     available_units INTEGER NOT NULL DEFAULT 1 CHECK (available_units > 0),
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+-- );
+-- CREATE TABLE book_authors (
+--     book_id INTEGER REFERENCES books(id) ON DELETE CASCADE,
+--     author_id INTEGER REFERENCES authors(id) ON DELETE CASCADE,
+--     PRIMARY KEY (book_id, author_id)
+-- );
+
+-- CREATE TYPE reservation_status AS ENUM (
+--     'pending',          
+--     'active',           
+--     'completed',        
+--     'cancelled',        
+--     'in_queue',         
+--     'queue_cancelled',  
+--     'ended_early',      
+--     'failed'           
+-- );
+-- CREATE TABLE reservations (
+--     id SERIAL PRIMARY KEY,
+--     customer_id INTEGER REFERENCES customers(id),
+--     book_id INTEGER REFERENCES books(id),
+--     start_time TIMESTAMP WITH TIME ZONE NOT NULL,
+--     end_time TIMESTAMP WITH TIME ZONE NOT NULL,
+--     price DECIMAL(10,2) NOT NULL,
+--     status reservation_status NOT NULL DEFAULT 'pending',
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+-- );
+-- CREATE INDEX idx_users_username ON users(username);
+-- CREATE INDEX idx_users_email ON users(email);
+-- CREATE INDEX idx_books_isbn ON books(isbn);
+-- CREATE INDEX idx_reservations_customer ON reservations(customer_id);
+-- CREATE INDEX idx_reservations_book ON reservations(book_id);
+-- CREATE INDEX idx_reservations_dates ON reservations(start_time, end_time);
+
+-- CREATE OR REPLACE FUNCTION update_updated_at_column()
+-- RETURNS TRIGGER AS $$
+-- BEGIN
+--     NEW.updated_at = CURRENT_TIMESTAMP;
+--     RETURN NEW;
+-- END;
+-- $$ language 'plpgsql';
+-- CREATE TRIGGER update_users_updated_at
+--     BEFORE UPDATE ON users
+--     FOR EACH ROW
+--     EXECUTE FUNCTION update_updated_at_column();
+-- CREATE TRIGGER update_books_updated_at
+--     BEFORE UPDATE ON books
+--     FOR EACH ROW
+--     EXECUTE FUNCTION update_updated_at_column();
+
+
+
+-- INSERT INTO users (username, first_name, last_name, email, phone, password, role) VALUES
+
+-- ('admin1', 'Amin', 'Rabiei', 'amin.rabieii@gmail.com', '01234567890', '123', 'Admin'),
+-- ('admin2', 'Mahdi', 'Vafayii', 'mahdi@bookstore.com', '01234567891', '123', 'Admin'),
+-- ('author1', 'Hossein', 'Mollayi', 'hoseein@author.com', '01234567892', '123', 'Author'),
+-- ('author2', 'Sara', 'famil', 'sara@author.com', '01234567893', '123', 'Author'),
+-- ('author3', 'Elham', 'famil', 'elham@author.com', '01234567894', '123', 'Author'),
+-- ('customer1', 'Maral', 'famil', 'maral@customer.com', '01234567895', '123', 'Customer'),
+-- ('customer2', 'Saeed', 'Anderson', 'saeed@customer.com', '01234567896', '123', 'Customer'),
+-- ('customer3', 'Majid', 'famil', 'majifd@customer.com', '01234567897', '123', 'Customer'),
+-- ('customer4', 'Leila', 'famil', 'leila@customer.com', '01234567898', '123', 'Customer'),
+-- ('customer5', 'Arash', 'famil', 'arash@customer.com', '01234567899', '123', 'Customer');
+
+-- INSERT INTO cities (name) VALUES 
+-- ('Tehran'), ('Esfehan'), ('Mashhad'), ('Karaj'), ('Arak'),
+-- ('Sannadaj'), ('Yasooj'), ('Birjand'), ('Tabriz'), ('Ahvaz');
+
+-- INSERT INTO genres (name) VALUES
+-- ('Fiction'), ('Non-Fiction'), ('Science Fiction'), ('Mystery'),
+-- ('Romance'), ('Biography'), ('History'), ('Fantasy'),
+-- ('Technology'), ('Self-Help');
+
+-- INSERT INTO books (title, isbn, price, genre_id, description, total_units, available_units) VALUES
+-- ('The Great Adventure', '9780123456789', 29.99, 1, 'A fascinating journey...', 5, 3),
+-- ('Science of Tomorrow', '9780123456790', 39.99, 3, 'Future technology...', 3, 2),
+-- ('Mystery at Midnight', '9780123456791', 24.99, 4, 'A thrilling mystery...', 4, 4),
+-- ('Love in Paris', '9780123456792', 19.99, 5, 'A romantic story...', 6, 5),
+-- ('Tech Revolution', '9780123456793', 49.99, 9, 'Digital transformation...', 3, 1),
+-- ('Historical Tales', '9780123456794', 34.99, 7, 'Ancient stories...', 4, 2),
+-- ('Fantasy World', '9780123456795', 29.99, 8, 'Magical adventure...', 5, 3),
+-- ('Self Discovery', '9780123456796', 24.99, 10, 'Personal growth...', 4, 4),
+-- ('Biography of Time', '9780123456797', 39.99, 6, 'Life story...', 3, 2),
+-- ('Modern Fiction', '9780123456798', 27.99, 1, 'Contemporary tale...', 5, 5);
+
+
+-- INSERT INTO customers (user_id, subscription_model, subscription_end_time, wallet_amount)
+-- SELECT 
+--     id,
+--     CASE (id % 3)::int 
+--         WHEN 0 THEN 'Free'::subscription_model  
+--         WHEN 1 THEN 'Plus'::subscription_model  
+--         ELSE 'Premium'::subscription_model  
+--     END,  
+    
+--     CURRENT_TIMESTAMP + interval '30 days',
+--     1000.00
+-- FROM users
+-- WHERE role = 'Customer';INSERT INTO authors (user_id, city_id, goodreads_link, bank_account_number)  
+-- INSERT INTO authors (user_id, city_id, goodreads_link, bank_account_number)
+-- SELECT 
+--     u.id,
+--     c.id,
+--     'link.com' || u.id,
+--     'BA' || u.id
+-- FROM users u
+-- JOIN cities c ON c.id = (u.id % 10) + 1  -- Distribute authors across cities
+-- WHERE u.role = 'Author';
+
+-- INSERT INTO book_authors (book_id, author_id)
+-- SELECT 
+--     b.id,
+--     a.id
+-- FROM 
+--     books b,
+--     authors a
+-- WHERE 
+--     b.id <= 10 
+--     AND a.id IN (
+--         SELECT id FROM authors ORDER BY id LIMIT 3
+--     )
+--     AND NOT EXISTS (
+--         SELECT 1 FROM book_authors ba 
+--         WHERE ba.book_id = b.id AND ba.author_id = a.id
+--     )
+-- LIMIT 15;
+
+
+-- UPDATE users  
+-- SET phone = '+989125987792'  
+-- WHERE username = 'admin1';
